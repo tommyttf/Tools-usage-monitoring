@@ -1,0 +1,5 @@
+venv
+.vscode
+.idea
+
+src/monitor-data-mongodb/.env

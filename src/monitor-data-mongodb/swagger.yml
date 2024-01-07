@@ -1,0 +1,226 @@
+openapi: 3.0.0
+info:
+  title: "ABC Co tool usage monitoring"
+  description: "An API about monitoring the usage of tools by users"
+  version: "1.0.0"
+
+servers:
+  - url: "/api/v1"
+
+components:
+  schemas:
+    Log:
+      type: "object"
+      required:
+        - log_id
+        - user_id
+        - tool_id
+        - start_dt
+      properties:
+        log_id:
+          type: "string"
+        user_id:
+          type: "string"
+        tool_id:
+          type: "string"
+        start_dt:
+          type: "string"
+          format: "date-time"
+        end_dt:
+          type: "string"
+          format: "date-time"
+    Log_to_update:
+      type: "object"
+      properties:
+        user_id:
+          type: "string"
+        tool_id:
+          type: "string"
+        is_delete:
+          type: "boolean"
+        start_dt:
+          type: "string"
+          format: "date-time"
+        end_dt:
+          type: "string"
+          format: "date-time"
+  parameters:
+    page:
+      name: "page"
+      description: "page of search list"
+      in: query
+      schema:
+        type: "integer"
+    per_page:
+      name: "per_page"
+      description: "number of records per page of search list"
+      in: query
+      schema:
+        type: "integer"
+    user_ids:
+      name: "user_ids"
+      description: "records of user_ids"
+      in: query
+      schema:
+        type: "array"
+        items:
+          type: string
+    tool_ids:
+      name: "tool_ids"
+      description: "records of tool_ids"
+      in: query
+      schema:
+        type: "array"
+        items:
+          type: string
+    is_online:
+      name: "is_online"
+      description: "is going to get who is online or not"
+      in: query
+      schema:
+        type: boolean
+    log_id:
+      name: "log_id"
+      required: true
+      description: "unique id across different tool"
+      in: path
+      schema:
+        type: string
+    is_hard:
+      name: "is_hard"
+      description: "is going to hard delete the record or not"
+      in: query
+      schema:
+        type: boolean
+    user_id:
+      name: "user_id"
+      required: true
+      description: "records of user_id"
+      in: path
+      schema:
+        type: string
+    tool_id:
+      name: "tool_id"
+      required: true
+      description: "records of tool_id"
+      in: path
+      schema:
+        type: string
+
+paths:
+  /logs:
+    get:
+      operationId: "log.get_all"
+      tags:
+        - "Logs"
+      summary: "Read the list of logs"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/per_page"
+        - $ref: "#/components/parameters/user_ids"
+        - $ref: "#/components/parameters/tool_ids"
+        - $ref: "#/components/parameters/is_online"
+      responses:
+        "200":
+          description: "Successfully read logs list"
+    post:
+      operationId: "log.create"
+      tags:
+        - "Logs"
+      summary: "Create a log"
+      requestBody:
+        x-body-name: "log"
+        description: "Log to create"
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Log"
+      responses:
+        "201":
+          description: "Successfully created log"
+        "409":
+          description: "Duplicate log_id exists"
+        "422":
+          description: "Some invalid inputs found"
+  /logs/{log_id}:
+    get:
+      operationId: "log.get_one"
+      tags:
+        - "Logs"
+      summary: "Read one log"
+      parameters:
+        - $ref: "#/components/parameters/log_id"
+      responses:
+        "200":
+          description: "Successfully read log"
+        "404":
+          description: "Log not found"
+    put:
+      tags:
+        - "Logs"
+      operationId: "log.update"
+      summary: "Update a log"
+      parameters:
+        - $ref: "#/components/parameters/log_id"
+      responses:
+        "200":
+          description: "Successfully updated log"
+        "404":
+          description: "Log not found"
+      requestBody:
+        x-body-name: "log"
+        description: "Log to update"
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Log_to_update"
+    delete:
+      tags:
+        - "Logs"
+      operationId: "log.delete"
+      summary: "Delete a log"
+      parameters:
+        - $ref: "#/components/parameters/log_id"
+        - $ref: "#/components/parameters/is_hard"
+      responses:
+        "204":
+          description: "Successfully deleted log"
+        "404":
+          description: "Log not found"
+  /users/{user_id}:
+    get:
+      operationId: "user.get_user_info"
+      tags:
+        - "Users"
+      summary: "Get user info including all usage time by tool"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      responses:
+        "200":
+          description: "Successfully read user info"
+  /users/online:
+    get:
+      operationId: "user.get_online_user_with_tools"
+      tags:
+        - "Users"
+      summary: "Get all users who is online and what tools are they currently using"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/per_page"
+      responses:
+        "200":
+          description: "Successfully read logs list"
+  /tools/online:
+    get:
+      operationId: "tool.get_online_users_by_tool"
+      tags:
+        - "Tools"
+      summary: "Get all tools currently used by users"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/per_page"
+      responses:
+        "200":
+          description: "Successfully read tool info"
